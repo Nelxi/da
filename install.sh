@@ -417,6 +417,7 @@ json_uri=https://${domain}/${web_path}?name=
 shor=($(openssl rand -hex 8) $(openssl rand -hex 8) $(openssl rand -hex 8) $(openssl rand -hex 8) $(openssl rand -hex 8) $(openssl rand -hex 8) $(openssl rand -hex 8) $(openssl rand -hex 8))
 
 ########################################Update X-UI Port/Path for first INSTALL#########################
+########################################Update X-UI Port/Path for first INSTALL#########################
 UPDATE_XUIDB(){
 if [[ -f $XUIDB ]]; then
         x-ui stop
@@ -426,9 +427,8 @@ if [[ -f $XUIDB ]]; then
         public_key=$(echo "$output" | grep "^Password:" | awk '{print $2}')
 
         client_id=$(/usr/local/x-ui/bin/xray-linux-amd64 uuid)
-        client_id2=$(/usr/local/x-ui/bin/xray-linux-amd64 uuid)
-        client_id3=$(/usr/local/x-ui/bin/xray-linux-amd64 uuid)
         emoji_flag=$(LC_ALL=en_US.UTF-8 curl -s https://ipwho.is/ | jq -r '.flag.emoji')
+        
        	sqlite3 $XUIDB <<EOF
              INSERT INTO "settings" ("key", "value") VALUES ("subPort",  '${sub_port}');
 	     INSERT INTO "settings" ("key", "value") VALUES ("subPath",  '${sub_path}');
@@ -469,244 +469,72 @@ if [[ -f $XUIDB ]]; then
              INSERT INTO "settings" ("key", "value") VALUES ("subJsonRules",  '');
 	     INSERT INTO "settings" ("key", "value") VALUES ("datepicker",  'gregorian');
              INSERT INTO "client_traffics" ("inbound_id","enable","email","up","down","expiry_time","total","reset") VALUES ('1','1','first','0','0','0','0','0');
-	     INSERT INTO "client_traffics" ("inbound_id","enable","email","up","down","expiry_time","total","reset") VALUES ('2','1','first_1','0','0','0','0','0');
+             
+             -- Универсальные инбаунды для всех операторов
              INSERT INTO "inbounds" ("user_id","up","down","total","remark","enable","expiry_time","listen","port","protocol","settings","stream_settings","tag","sniffing") VALUES ( 
-             '1',
-	     '0',
-             '0',
-	     '0',
-             '${emoji_flag} reality',
-	     '1',
-             '0',
-	     '',
-             '8443',
-	     'vless',
-             '{
-	     "clients": [
-    {
-      "id": "${client_id}",
-      "flow": "xtls-rprx-vision",
-      "email": "first",
-      "limitIp": 0,
-      "totalGB": 0,
-      "expiryTime": 0,
-      "enable": true,
-      "tgId": "",
-      "subId": "first",
-      "reset": 0,
-      "created_at": 1756726925000,
-      "updated_at": 1756726925000
+             '1','0','0','0','👻GHOSTLINK УНИВЕРСАЛЬНЫЙ (МТС, МЕГАФОН, ЙОТА, РОСТЕЛЕКОМ)','1','0','','8443','vless',
+             '{"clients": [{"id": "${client_id}", "flow": "xtls-rprx-vision", "email": "first", "limitIp": 0, "totalGB": 0, "expiryTime": 0, "enable": true, "tgId": "", "subId": "first", "reset": 0, "created_at": 1756726925000, "updated_at": 1756726925000}], "decryption": "none", "fallbacks": []}',
+             '{"network": "tcp", "security": "reality", "externalProxy": [{"forceTls": "same", "dest": "${domain}", "port": 443, "remark": ""}], "realitySettings": {"show": false, "xver": 0, "target": "queuev4.vk.com:443", "serverNames": ["queuev4.vk.com", "stats.vk-portal.net", "sun6-21.userapi.com", "sun6-20.userapi.com", "sun6-22.userapi.com", "eh.vk.com", "akashi.vk-portal.net", "st.ozone.ru", "ir.ozone.ru", "vt-1.ozone.ru", "ozone.ru", "splitter.wb.ru", "login.vk.com", "goya.rutube.ru", "www.kinopoisk.ru", "speller.yandex.net", "vk.com", "www.wildberries.ru", "www.ozon.ru"], "privateKey": "${private_key}", "minClient": "", "maxClient": "", "maxTimediff": 0, "shortIds": ["${shor[0]}", "${shor[1]}", "${shor[2]}", "${shor[3]}"], "settings": {"publicKey": "${public_key}", "fingerprint": "random", "serverName": "", "spiderX": "/"}}, "tcpSettings": {"acceptProxyProtocol": true, "header": {"type": "none"}}}',
+             'inbound-8443','{"enabled": false, "destOverride": ["http", "tls", "quic", "fakedns"], "metadataOnly": false, "routeOnly": false}'
+             );
 
-    }
-  ],
-  "decryption": "none",
-  "fallbacks": []
-}',
-	     '{
-  "network": "tcp",
-  "security": "reality",
-  "externalProxy": [
-    {
-      "forceTls": "same",
-      "dest": "${domain}",
-      "port": 443,
-      "remark": ""
-    }
-  ],
-  "realitySettings": {
-    "show": false,
-    "xver": 0,
-    "target": "${reality_domain}:9443",
-    "serverNames": [
-      "$reality_domain"
-    ],
-    "privateKey": "${private_key}",
-    "minClient": "",
-    "maxClient": "",
-    "maxTimediff": 0,
-    "shortIds": [
-      "${shor[0]}",
-      "${shor[1]}",
-      "${shor[2]}",
-      "${shor[3]}",
-      "${shor[4]}",
-      "${shor[5]}",
-      "${shor[6]}",
-      "${shor[7]}"
-    ],
-    "settings": {
-      "publicKey": "${public_key}",
-      "fingerprint": "random",
-      "serverName": "",
-      "spiderX": "/"
-    }
-  },
-  "tcpSettings": {
-    "acceptProxyProtocol": true,
-    "header": {
-      "type": "none"
-    }
-  }
-}',
-             'inbound-8443',
-	     '{
-  "enabled": false,
-  "destOverride": [
-    "http",
-    "tls",
-    "quic",
-    "fakedns"
-  ],
-  "metadataOnly": false,
-  "routeOnly": false
-}'
-	     );
-      INSERT INTO "inbounds" ("user_id","up","down","total","remark","enable","expiry_time","listen","port","protocol","settings","stream_settings","tag","sniffing") VALUES ( 
-             '1',
-	     '0',
-             '0',
-	     '0',
-             '${emoji_flag} ws',
-	     '1',
-             '0',
-	     '',
-             '${ws_port}',
-	     'vless',
-             '{
-  "clients": [
-    {
-      "id": "${client_id2}",
-      "flow": "",
-      "email": "first_1",
-      "limitIp": 0,
-      "totalGB": 0,
-      "expiryTime": 0,
-      "enable": true,
-      "tgId": "",
-      "subId": "first",
-      "reset": 0,
-      "created_at": 1756726925000,
-      "updated_at": 1756726925000
+             -- Инбаунд для МТС и Мегафон
+             INSERT INTO "inbounds" ("user_id","up","down","total","remark","enable","expiry_time","listen","port","protocol","settings","stream_settings","tag","sniffing") VALUES ( 
+             '1','0','0','0','👻GHOSTLINK МТС & МЕГАФОН','1','0','','8444','vless',
+             '{"clients": [{"id": "${client_id}", "flow": "xtls-rprx-vision", "email": "first", "limitIp": 0, "totalGB": 0, "expiryTime": 0, "enable": true, "tgId": "", "subId": "first", "reset": 0, "created_at": 1756726925000, "updated_at": 1756726925000}], "decryption": "none", "fallbacks": []}',
+             '{"network": "tcp", "security": "reality", "externalProxy": [{"forceTls": "same", "dest": "${domain}", "port": 443, "remark": ""}], "realitySettings": {"show": false, "xver": 0, "target": "sba.yandex.net:443", "serverNames": ["sba.yandex.net", "identitystatic.mts.ru", "tag.a.mts.ru", "login.mts.ru", "serving.a.mts.ru", "cm.a.mts.ru", "api.a.mts.ru", "mtscdn.ru", "moscow.megafon.ru", "ok.ru", "yandex.ru", "dzen.ru"], "privateKey": "${private_key}", "minClient": "", "maxClient": "", "maxTimediff": 0, "shortIds": ["${shor[4]}", "${shor[5]}"], "settings": {"publicKey": "${public_key}", "fingerprint": "random", "serverName": "", "spiderX": "/"}}, "tcpSettings": {"acceptProxyProtocol": true, "header": {"type": "none"}}}',
+             'inbound-8444','{"enabled": false, "destOverride": ["http", "tls", "quic", "fakedns"], "metadataOnly": false, "routeOnly": false}'
+             );
 
-    }
-  ],
-  "decryption": "none",
-  "fallbacks": []
-}','{
-  "network": "ws",
-  "security": "none",
-  "externalProxy": [
-    {
-      "forceTls": "tls",
-      "dest": "${domain}",
-      "port": 443,
-      "remark": ""
-    }
-  ],
-  "wsSettings": {
-    "acceptProxyProtocol": false,
-    "path": "/${ws_port}/${ws_path}",
-    "host": "${domain}",
-    "headers": {}
-  }
-}',
-             'inbound-${ws_port}',
-	     '{
-  "enabled": false,
-  "destOverride": [
-    "http",
-    "tls",
-    "quic",
-    "fakedns"
-  ],
-  "metadataOnly": false,
-  "routeOnly": false
-}'
-	     );
-      INSERT INTO "inbounds" ("user_id","up","down","total","remark","enable","expiry_time","listen","port","protocol","settings","stream_settings","tag","sniffing") VALUES ( 
-             '1',
-	     '0',
-             '0',
-	     '0',
-             '${emoji_flag} xhttp',
-	     '1',
-             '0',
-	     '/dev/shm/uds2023.sock,0666',
-             '0',
-	     'vless',
-             '{
-  "clients": [
-    {
-      "id": "${client_id3}",
-      "flow": "",
-      "email": "firstX",
-      "limitIp": 0,
-      "totalGB": 0,
-      "expiryTime": 0,
-      "enable": true,
-      "tgId": "",
-      "subId": "first",
-      "reset": 0,
-	  "created_at": 1756726925000,
-      "updated_at": 1756726925000
-    }
-  ],
-  "decryption": "none",
-  "fallbacks": []
-}','{
-  "network": "xhttp",
-  "security": "none",
-  "externalProxy": [
-    {
-      "forceTls": "tls",
-      "dest": "${domain}",
-      "port": 443,
-      "remark": ""
-    }
-  ],
-  "xhttpSettings": {
-    "path": "/${xhttp_path}",
-    "host": "",
-    "headers": {},
-    "scMaxBufferedPosts": 30,
-    "scMaxEachPostBytes": "1000000",
-    "noSSEHeader": false,
-    "xPaddingBytes": "100-1000",
-    "mode": "packet-up"
-  },
-  "sockopt": {
-    "acceptProxyProtocol": false,
-    "tcpFastOpen": true,
-    "mark": 0,
-    "tproxy": "off",
-    "tcpMptcp": true,
-    "tcpNoDelay": true,
-    "domainStrategy": "UseIP",
-    "tcpMaxSeg": 1440,
-    "dialerProxy": "",
-    "tcpKeepAliveInterval": 0,
-    "tcpKeepAliveIdle": 300,
-    "tcpUserTimeout": 10000,
-    "tcpcongestion": "bbr",
-    "V6Only": false,
-    "tcpWindowClamp": 600,
-    "interface": ""
-  }
-}',
-             'inbound-/dev/shm/uds2023.sock,0666:0|',
-	     '{
-  "enabled": true,
-  "destOverride": [
-    "http",
-    "tls",
-    "quic",
-    "fakedns"
-  ],
-  "metadataOnly": false,
-  "routeOnly": false
-}'
-	     );
+             -- Инбаунд для Яндекс сервисов
+             INSERT INTO "inbounds" ("user_id","up","down","total","remark","enable","expiry_time","listen","port","protocol","settings","stream_settings","tag","sniffing") VALUES ( 
+             '1','0','0','0','👻GHOSTLINK ЯНДЕКС СЕРВИСЫ','1','0','','8445','vless',
+             '{"clients": [{"id": "${client_id}", "flow": "xtls-rprx-vision", "email": "first", "limitIp": 0, "totalGB": 0, "expiryTime": 0, "enable": true, "tgId": "", "subId": "first", "reset": 0, "created_at": 1756726925000, "updated_at": 1756726925000}], "decryption": "none", "fallbacks": []}',
+             '{"network": "tcp", "security": "reality", "externalProxy": [{"forceTls": "same", "dest": "${domain}", "port": 443, "remark": ""}], "realitySettings": {"show": false, "xver": 0, "target": "avatars.mds.yandex.net:443", "serverNames": ["avatars.mds.yandex.net", "sync.browser.yandex.net", "yastatic.net", "csp.yandex.net", "egress.yandex.net", "strm-rad-23.strm.yandex.net", "strm-spbmiran-08.strm.yandex.net"], "privateKey": "${private_key}", "minClient": "", "maxClient": "", "maxTimediff": 0, "shortIds": ["${shor[6]}"], "settings": {"publicKey": "${public_key}", "fingerprint": "random", "serverName": "", "spiderX": "/"}}, "tcpSettings": {"acceptProxyProtocol": true, "header": {"type": "none"}}}',
+             'inbound-8445','{"enabled": false, "destOverride": ["http", "tls", "quic", "fakedns"], "metadataOnly": false, "routeOnly": false}'
+             );
+
+             -- Инбаунд для банковских сервисов
+             INSERT INTO "inbounds" ("user_id","up","down","total","remark","enable","expiry_time","listen","port","protocol","settings","stream_settings","tag","sniffing") VALUES ( 
+             '1','0','0','0','👻GHOSTLINK БАНКИ И ФИНАНСЫ','1','0','','8446','vless',
+             '{"clients": [{"id": "${client_id}", "flow": "xtls-rprx-vision", "email": "first", "limitIp": 0, "totalGB": 0, "expiryTime": 0, "enable": true, "tgId": "", "subId": "first", "reset": 0, "created_at": 1756726925000, "updated_at": 1756726925000}], "decryption": "none", "fallbacks": []}',
+             '{"network": "tcp", "security": "reality", "externalProxy": [{"forceTls": "same", "dest": "${domain}", "port": 443, "remark": ""}], "realitySettings": {"show": false, "xver": 0, "target": "online.sberbank.ru:443", "serverNames": ["online.sberbank.ru", "esa-res.online.sberbank.ru", "alfabank.ru", "alfabank.servicecdn.ru", "alfabank.st", "nspk.ru", "www.tbank.ru", "id.tbank.ru", "tmsg.tbank.ru", "le.tbank.ru", "hrc.tbank.ru"], "privateKey": "${private_key}", "minClient": "", "maxClient": "", "maxTimediff": 0, "shortIds": ["${shor[7]}"], "settings": {"publicKey": "${public_key}", "fingerprint": "random", "serverName": "", "spiderX": "/"}}, "tcpSettings": {"acceptProxyProtocol": true, "header": {"type": "none"}}}',
+             'inbound-8446','{"enabled": false, "destOverride": ["http", "tls", "quic", "fakedns"], "metadataOnly": false, "routeOnly": false}'
+             );
+
+             -- Инбаунд для почтовых и медиа сервисов
+             INSERT INTO "inbounds" ("user_id","up","down","total","remark","enable","expiry_time","listen","port","protocol","settings","stream_settings","tag","sniffing") VALUES ( 
+             '1','0','0','0','👻GHOSTLINK ПОЧТА И МЕДИА','1','0','','8447','vless',
+             '{"clients": [{"id": "${client_id}", "flow": "xtls-rprx-vision", "email": "first", "limitIp": 0, "totalGB": 0, "expiryTime": 0, "enable": true, "tgId": "", "subId": "first", "reset": 0, "created_at": 1756726925000, "updated_at": 1756726925000}], "decryption": "none", "fallbacks": []}',
+             '{"network": "tcp", "security": "reality", "externalProxy": [{"forceTls": "same", "dest": "${domain}", "port": 443, "remark": ""}], "realitySettings": {"show": false, "xver": 0, "target": "top-fwz1.mail.ru:443", "serverNames": ["top-fwz1.mail.ru", "ad.mail.ru", "rs.mail.ru", "privacy-cs.mail.ru", "st.okcdn.ru", "counter.yadro.ru", "742231.ms.ok.ru", "user-geo-data.wildberries.ru", "banners-website.wildberries.ru", "chat-prod.wildberries.ru", "a.wb.ru"], "privateKey": "${private_key}", "minClient": "", "maxClient": "", "maxTimediff": 0, "shortIds": ["${shor[0]}1"], "settings": {"publicKey": "${public_key}", "fingerprint": "random", "serverName": "", "spiderX": "/"}}, "tcpSettings": {"acceptProxyProtocol": true, "header": {"type": "none"}}}',
+             'inbound-8447','{"enabled": false, "destOverride": ["http", "tls", "quic", "fakedns"], "metadataOnly": false, "routeOnly": false}'
+             );
+
+             -- Инбаунд для CDN и аналитики
+             INSERT INTO "inbounds" ("user_id","up","down","total","remark","enable","expiry_time","listen","port","protocol","settings","stream_settings","tag","sniffing") VALUES ( 
+             '1','0','0','0','👻GHOSTLINK CDN И АНАЛИТИКА','1','0','','8448','vless',
+             '{"clients": [{"id": "${client_id}", "flow": "xtls-rprx-vision", "email": "first", "limitIp": 0, "totalGB": 0, "expiryTime": 0, "enable": true, "tgId": "", "subId": "first", "reset": 0, "created_at": 1756726925000, "updated_at": 1756726925000}], "decryption": "none", "fallbacks": []}',
+             '{"network": "tcp", "security": "reality", "externalProxy": [{"forceTls": "same", "dest": "${domain}", "port": 443, "remark": ""}], "realitySettings": {"show": false, "xver": 0, "target": "servicepipe.ru:443", "serverNames": ["servicepipe.ru", "ad.adriver.ru", "imgproxy.cdn-tinkoff.ru", "mddc.tinkoff.ru", "rap.skcrtxr.com", "eye.targetads.io", "px.adhigh.net", "tns-counter.ru", "widgets.cbonds.ru", "www.magnit.com", "magnit-ru.injector.3ebra.net", "jsons.injector.3ebra.net", "2gis.ru", "d-assets.2gis.ru", "s1.bss.2gis.com"], "privateKey": "${private_key}", "minClient": "", "maxClient": "", "maxTimediff": 0, "shortIds": ["${shor[1]}1"], "settings": {"publicKey": "${public_key}", "fingerprint": "random", "serverName": "", "spiderX": "/"}}, "tcpSettings": {"acceptProxyProtocol": true, "header": {"type": "none"}}}',
+             'inbound-8448','{"enabled": false, "destOverride": ["http", "tls", "quic", "fakedns"], "metadataOnly": false, "routeOnly": false}'
+             );
+
+             -- Инбаунд для API и облачных сервисов
+             INSERT INTO "inbounds" ("user_id","up","down","total","remark","enable","expiry_time","listen","port","protocol","settings","stream_settings","tag","sniffing") VALUES ( 
+             '1','0','0','0','👻GHOSTLINK API И ОБЛАКА','1','0','','8449','vless',
+             '{"clients": [{"id": "${client_id}", "flow": "xtls-rprx-vision", "email": "first", "limitIp": 0, "totalGB": 0, "expiryTime": 0, "enable": true, "tgId": "", "subId": "first", "reset": 0, "created_at": 1756726925000, "updated_at": 1756726925000}], "decryption": "none", "fallbacks": []}',
+             '{"network": "tcp", "security": "reality", "externalProxy": [{"forceTls": "same", "dest": "${domain}", "port": 443, "remark": ""}], "realitySettings": {"show": false, "xver": 0, "target": "api.mindbox.ru:443", "serverNames": ["api.mindbox.ru", "web-static.mindbox.ru", "storage.yandexcloud.net", "personalization-web-stable.mindbox.ru", "d5de4k0ri8jba7ucdbt6.apigw.yandexcloud.net", "api.expf.ru", "fb-cdn.premier.one", "widgets.kinopoisk.ru", "payment-widget.plus.kinopoisk.ru", "api.events.plus.yandex.net", "xapi.ozon.ru", "io.ozone.ru", "statad.ru", "get4click.ru", "sntr.avito.ru", "yabro-wbplugin.edadeal.yandex.ru", "cdn.uxfeedback.ru"], "privateKey": "${private_key}", "minClient": "", "maxClient": "", "maxTimediff": 0, "shortIds": ["${shor[2]}1"], "settings": {"publicKey": "${public_key}", "fingerprint": "random", "serverName": "", "spiderX": "/"}}, "tcpSettings": {"acceptProxyProtocol": true, "header": {"type": "none"}}}',
+             'inbound-8449','{"enabled": false, "destOverride": ["http", "tls", "quic", "fakedns"], "metadataOnly": false, "routeOnly": false}'
+             );
+
+             -- Инбаунд для операторов T2 и Beeline
+             INSERT INTO "inbounds" ("user_id","up","down","total","remark","enable","expiry_time","listen","port","protocol","settings","stream_settings","tag","sniffing") VALUES ( 
+             '1','0','0','0','👻GHOSTLINK T2 & BEELINE','1','0','','8450','vless',
+             '{"clients": [{"id": "${client_id}", "flow": "xtls-rprx-vision", "email": "first", "limitIp": 0, "totalGB": 0, "expiryTime": 0, "enable": true, "tgId": "", "subId": "first", "reset": 0, "created_at": 1756726925000, "updated_at": 1756726925000}], "decryption": "none", "fallbacks": []}',
+             '{"network": "tcp", "security": "reality", "externalProxy": [{"forceTls": "same", "dest": "${domain}", "port": 443, "remark": ""}], "realitySettings": {"show": false, "xver": 0, "target": "www.t2.ru:443", "serverNames": ["www.t2.ru", "msk.t2.ru", "s3.t2.ru", "beeline.api.flocktory.com", "static.beeline.ru", "moskva.beeline.ru", "wcm.weborama-tech.ru", "1013a--ma--8935--cp199.stbid.ru"], "privateKey": "${private_key}", "minClient": "", "maxClient": "", "maxTimediff": 0, "shortIds": ["${shor[3]}1"], "settings": {"publicKey": "${public_key}", "fingerprint": "random", "serverName": "", "spiderX": "/"}}, "tcpSettings": {"acceptProxyProtocol": true, "header": {"type": "none"}}}',
+             'inbound-8450','{"enabled": false, "destOverride": ["http", "tls", "quic", "fakedns"], "metadataOnly": false, "routeOnly": false}'
+             );
 EOF
+
 /usr/local/x-ui/x-ui setting -username "${config_username}" -password "${config_password}" -port "${panel_port}" -webBasePath ""
 x-ui start
 else
