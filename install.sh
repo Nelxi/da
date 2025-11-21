@@ -1,4 +1,3 @@
-
 #!/bin/bash
 #################### x-ui-pro v2.4.3 @ github.com/GFW4Fun ##############################################
 [[ $EUID -ne 0 ]] && echo "not root!" && sudo su -
@@ -48,25 +47,17 @@ make_port() {
 }
 sub_port=$(make_port)
 panel_port=$(make_port)
-web_path=$(tr -dc A-Za-z0-9 </dev/urandom | head -c "$(shuf -i 6-12 -n 1)")
-sub2singbox_path=$(tr -dc A-Za-z0-9 </dev/urandom | head -c "$(shuf -i 6-12 -n 1)")
-sub_path=$(tr -dc A-Za-z0-9 </dev/urandom | head -c "$(shuf -i 6-12 -n 1)")
-json_path=$(tr -dc A-Za-z0-9 </dev/urandom | head -c "$(shuf -i 6-12 -n 1)")
-panel_path=$(tr -dc A-Za-z0-9 </dev/urandom | head -c "$(shuf -i 6-12 -n 1)")
+# Фиксированные простые пути
+web_path="sub"
+sub2singbox_path="sub2singbox" 
+sub_path="sub"
+json_path="json"
+panel_path="admin"
 ws_port=$(make_port)
-ws_path=$(tr -dc A-Za-z0-9 </dev/urandom | head -c "$(shuf -i 6-12 -n 1)")web_path
-xhttp_path=$(tr -dc A-Za-z0-9 </dev/urandom | head -c "$(shuf -i 6-12 -n 1)")
+ws_path="ws"
+xhttp_path="xhttp"
 config_username=$(gen_random_string 10)
 config_password=$(gen_random_string 10)
-##################################Random Port and Path #################################################
-#RNDSTR=$(tr -dc A-Za-z0-9 </dev/urandom | head -c "$(shuf -i 6-12 -n 1)")
-#while true; do 
-#    PORT=$(( ((RANDOM<<15)|RANDOM) % 49152 + 10000 ))
-#    status="$(nc -z 127.0.0.1 $PORT < /dev/null &>/dev/null; echo $?)"
-#    if [ "${status}" != "0" ]; then
-#        break
-#    fi
-#done
 
 ################################Get arguments###########################################################
 while [ "$#" -gt 0 ]; do
@@ -266,7 +257,18 @@ server {
 	if (\$request_uri ~ "(\"|'|\`|~|,|:|--|;|%|\\$|&&|\?\?|0x00|0X00|\||\\|\{|\}|\[|\]|<|>|\.\.\.|\.\.\/|\/\/\/)"){set \$hack 1;}
 	error_page 400 401 402 403 500 501 502 503 504 =404 /404;
 	proxy_intercept_errors on;
-	#X-UI Admin Panel
+	
+	# X-UI Admin Panel - основной путь на домене
+	location / {
+		proxy_redirect off;
+		proxy_set_header Host \$host;
+		proxy_set_header X-Real-IP \$remote_addr;
+		proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+		proxy_pass http://127.0.0.1:${panel_port};
+		break;
+	}
+	
+	# Альтернативный путь для панели
 	location /${panel_path}/ {
 		proxy_redirect off;
 		proxy_set_header Host \$host;
@@ -275,108 +277,30 @@ server {
 		proxy_pass http://127.0.0.1:${panel_port};
 		break;
 	}
-        location /${panel_path} {
+	
+	#Subscription Path (simple/encode)
+	location /${sub_path} {
+		if (\$hack = 1) {return 404;}
 		proxy_redirect off;
 		proxy_set_header Host \$host;
 		proxy_set_header X-Real-IP \$remote_addr;
 		proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-		proxy_pass http://127.0.0.1:${panel_port};
+		proxy_pass http://127.0.0.1:${sub_port};
 		break;
 	}
-  	#sub2sing-box
-	location /${sub2singbox_path}/ {
+	
+	#Subscription Path (json/fragment)
+	location /${json_path} {
+		if (\$hack = 1) {return 404;}
 		proxy_redirect off;
 		proxy_set_header Host \$host;
 		proxy_set_header X-Real-IP \$remote_addr;
 		proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-		proxy_pass http://127.0.0.1:8080/;
-		}
-    # Path to open clash.yaml and generate YAML
-    location ~ ^/${web_path}/clashmeta/(.+)$ {
-        default_type text/plain;
-        ssi on;
-        ssi_types text/plain;
-        set \$subid \$1;
-        root /var/www/subpage;
-        try_files /clash.yaml =404;
-    }
-    # web
-    location ~ ^/${web_path} {
-        root /var/www/subpage;
-        index index.html;
-        try_files \$uri \$uri/ /index.html =404;
-    }
- 	#Subscription Path (simple/encode)
-        location /${sub_path} {
-                if (\$hack = 1) {return 404;}
-                proxy_redirect off;
-                proxy_set_header Host \$host;
-                proxy_set_header X-Real-IP \$remote_addr;
-                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                proxy_pass http://127.0.0.1:${sub_port};
-                break;
-        }
-	location /${sub_path}/ {
-                if (\$hack = 1) {return 404;}
-                proxy_redirect off;
-                proxy_set_header Host \$host;
-                proxy_set_header X-Real-IP \$remote_addr;
-                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                proxy_pass http://127.0.0.1:${sub_port};
-                break;
-        }
-	location /assets/ {
-                if (\$hack = 1) {return 404;}
-                proxy_redirect off;
-                proxy_set_header Host \$host;
-                proxy_set_header X-Real-IP \$remote_addr;
-                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                proxy_pass http://127.0.0.1:${sub_port};
-                break;
-        }
-	location /assets {
-                if (\$hack = 1) {return 404;}
-                proxy_redirect off;
-                proxy_set_header Host \$host;
-                proxy_set_header X-Real-IP \$remote_addr;
-                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                proxy_pass http://127.0.0.1:${sub_port};
-                break;
-        }
-	#Subscription Path (json/fragment)
-        location /${json_path} {
-                if (\$hack = 1) {return 404;}
-                proxy_redirect off;
-                proxy_set_header Host \$host;
-                proxy_set_header X-Real-IP \$remote_addr;
-                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                proxy_pass http://127.0.0.1:${sub_port};
-                break;
-        }
-	location /${json_path}/ {
-                if (\$hack = 1) {return 404;}
-                proxy_redirect off;
-                proxy_set_header Host \$host;
-                proxy_set_header X-Real-IP \$remote_addr;
-                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                proxy_pass http://127.0.0.1:${sub_port};
-                break;
-        }
-        #XHTTP
-        location /${xhttp_path} {
-          grpc_pass grpc://unix:/dev/shm/uds2023.sock;
-          grpc_buffer_size         16k;
-          grpc_socket_keepalive    on;
-          grpc_read_timeout        1h;
-          grpc_send_timeout        1h;
-          grpc_set_header Connection         "";
-          grpc_set_header X-Forwarded-For    \$proxy_add_x_forwarded_for;
-          grpc_set_header X-Forwarded-Proto  \$scheme;
-          grpc_set_header X-Forwarded-Port   \$server_port;
-          grpc_set_header Host               \$host;
-          grpc_set_header X-Forwarded-Host   \$host;
-          }
- 	#Xray Config Path
+		proxy_pass http://127.0.0.1:${sub_port};
+		break;
+	}
+	
+	#Xray Config Path
 	location ~ ^/(?<fwdport>\d+)/(?<fwdpath>.*)\$ {
 	$CF_IP	if (\$cloudflare_ip != 1) {return 404;}
 		if (\$hack = 1) {return 404;}
@@ -394,8 +318,6 @@ server {
 		proxy_set_header Host \$host;
 		proxy_set_header X-Real-IP \$remote_addr;
 		proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-		#proxy_set_header CF-IPCountry \$http_cf_ipcountry;
-		#proxy_set_header CF-IP \$realip_remote_addr;
 		if (\$content_type ~* "GRPC") {
 			grpc_pass grpc://127.0.0.1:\$fwdport\$is_args\$args;
 			break;
@@ -403,13 +325,12 @@ server {
 		if (\$http_upgrade ~* "(WEBSOCKET|WS)") {
 			proxy_pass http://127.0.0.1:\$fwdport\$is_args\$args;
 			break;
-	        }
+		}
 		if (\$request_method ~* ^(PUT|POST|GET)\$) {
 			proxy_pass http://127.0.0.1:\$fwdport\$is_args\$args;
 			break;
 		}
 	}
-	location / { try_files \$uri \$uri/ =404; }
 }
 EOF
 
@@ -432,99 +353,13 @@ server {
 	if (\$request_uri ~ "(\"|'|\`|~|,|:|--|;|%|\\$|&&|\?\?|0x00|0X00|\||\\|\{|\}|\[|\]|<|>|\.\.\.|\.\.\/|\/\/\/)"){set \$hack 1;}
 	error_page 400 401 402 403 500 501 502 503 504 =404 /404;
 	proxy_intercept_errors on;
-	#X-UI Admin Panel
-	location /${panel_path}/ {
-		proxy_redirect off;
-		proxy_set_header Host \$host;
-		proxy_set_header X-Real-IP \$remote_addr;
-		proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-		proxy_pass http://127.0.0.1:${panel_port};
-		break;
+	
+	# Заглушка для reality домена
+	location / {
+		return 404;
 	}
-        location /$panel_path {
-		proxy_redirect off;
-		proxy_set_header Host \$host;
-		proxy_set_header X-Real-IP \$remote_addr;
-		proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-		proxy_pass http://127.0.0.1:${panel_port};
-		break;
-	}
-  	#sub2sing-box
-	location /${sub2singbox_path}/ {
-		proxy_redirect off;
-		proxy_set_header Host \$host;
-		proxy_set_header X-Real-IP \$remote_addr;
-		proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-		proxy_pass http://127.0.0.1:8080/;
-		}
-    # Path to open clash.yaml and generate YAML
-    location ~ ^/${web_path}/clashmeta/(.+)$ {
-        default_type text/plain;
-        ssi on;
-        ssi_types text/plain;
-        set \$subid \$1;
-        root /var/www/subpage;
-        try_files /clash.yaml =404;
-    }
-    # web
-    location ~ ^/${web_path} {
-        root /var/www/subpage;
-        index index.html;
-        try_files \$uri \$uri/ /index.html =404;
-    }
- 	#Subscription Path (simple/encode)
-        location /${sub_path} {
-                if (\$hack = 1) {return 404;}
-                proxy_redirect off;
-                proxy_set_header Host \$host;
-                proxy_set_header X-Real-IP \$remote_addr;
-                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                proxy_pass http://127.0.0.1:${sub_port};
-                break;
-        }
-	location /${sub_path}/ {
-                if (\$hack = 1) {return 404;}
-                proxy_redirect off;
-                proxy_set_header Host \$host;
-                proxy_set_header X-Real-IP \$remote_addr;
-                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                proxy_pass http://127.0.0.1:${sub_port};
-                break;
-        }
-	#Subscription Path (json/fragment)
-        location /${json_path} {
-                if (\$hack = 1) {return 404;}
-                proxy_redirect off;
-                proxy_set_header Host \$host;
-                proxy_set_header X-Real-IP \$remote_addr;
-                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                proxy_pass http://127.0.0.1:${sub_port};
-                break;
-        }
-	location /${json_path}/ {
-                if (\$hack = 1) {return 404;}
-                proxy_redirect off;
-                proxy_set_header Host \$host;
-                proxy_set_header X-Real-IP \$remote_addr;
-                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                proxy_pass http://127.0.0.1:${sub_port};
-                break;
-        }
-        #XHTTP
-        location /${xhttp_path} {
-          grpc_pass grpc://unix:/dev/shm/uds2023.sock;
-          grpc_buffer_size         16k;
-          grpc_socket_keepalive    on;
-          grpc_read_timeout        1h;
-          grpc_send_timeout        1h;
-          grpc_set_header Connection         "";
-          grpc_set_header X-Forwarded-For    \$proxy_add_x_forwarded_for;
-          grpc_set_header X-Forwarded-Proto  \$scheme;
-          grpc_set_header X-Forwarded-Port   \$server_port;
-          grpc_set_header Host               \$host;
-          grpc_set_header X-Forwarded-Host   \$host;
-          }
- 	#Xray Config Path
+	
+	#Xray Config Path
 	location ~ ^/(?<fwdport>\d+)/(?<fwdpath>.*)\$ {
 	$CF_IP	if (\$cloudflare_ip != 1) {return 404;}
 		if (\$hack = 1) {return 404;}
@@ -542,8 +377,6 @@ server {
 		proxy_set_header Host \$host;
 		proxy_set_header X-Real-IP \$remote_addr;
 		proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-		#proxy_set_header CF-IPCountry \$http_cf_ipcountry;
-		#proxy_set_header CF-IP \$realip_remote_addr;
 		if (\$content_type ~* "GRPC") {
 			grpc_pass grpc://127.0.0.1:\$fwdport\$is_args\$args;
 			break;
@@ -551,13 +384,12 @@ server {
 		if (\$http_upgrade ~* "(WEBSOCKET|WS)") {
 			proxy_pass http://127.0.0.1:\$fwdport\$is_args\$args;
 			break;
-	        }
+		}
 		if (\$request_method ~* ^(PUT|POST|GET)\$) {
 			proxy_pass http://127.0.0.1:\$fwdport\$is_args\$args;
 			break;
 		}
 	}
-	location / { try_files \$uri \$uri/ =404; }
 }
 EOF
 ##################################Check Nginx status####################################################
@@ -875,7 +707,7 @@ if [[ -f $XUIDB ]]; then
 }'
 	     );
 EOF
-/usr/local/x-ui/x-ui setting -username "${config_username}" -password "${config_password}" -port "${panel_port}" -webBasePath "${panel_path}"
+/usr/local/x-ui/x-ui setting -username "${config_username}" -password "${config_password}" -port "${panel_port}" -webBasePath ""
 x-ui start
 else
 	msg_err "x-ui.db file not exist! Maybe x-ui isn't installed." && exit 1;
@@ -914,66 +746,8 @@ echo "net.ipv4.tcp_wmem = 4096 65536 16777216" | tee -a /etc/sysctl.conf
 
 sysctl -p
 
-
-######################install_sub2sing-box#################################################################
-
-if pgrep -x "sub2sing-box" > /dev/null; then
-    echo "kill sub2sing-box..."
-    pkill -x "sub2sing-box"
-fi
-if [ -f "/usr/bin/sub2sing-box" ]; then
-    echo "delete sub2sing-box..."
-    rm -f /usr/bin/sub2sing-box
-fi
-wget -P /root/ https://github.com/legiz-ru/sub2sing-box/releases/download/v0.0.9/sub2sing-box_0.0.9_linux_amd64.tar.gz
-tar -xvzf /root/sub2sing-box_0.0.9_linux_amd64.tar.gz -C /root/ --strip-components=1 sub2sing-box_0.0.9_linux_amd64/sub2sing-box
-mv /root/sub2sing-box /usr/bin/
-chmod +x /usr/bin/sub2sing-box
-rm /root/sub2sing-box_0.0.9_linux_amd64.tar.gz
-su -c "/usr/bin/sub2sing-box server --bind 127.0.0.1 --port 8080 & disown" root
-
-######################install_fake_site#################################################################
-
-sudo su -c "bash <(wget -qO- https://raw.githubusercontent.com/mozaroc/x-ui-pro/refs/heads/master/randomfakehtml.sh)"
-
-######################install_web_sub_page##############################################################
-
-URL_SUB_PAGE=( "https://github.com/legiz-ru/x-ui-pro/raw/master/sub-3x-ui.html"
-		"https://github.com/legiz-ru/x-ui-pro/raw/master/sub-3x-ui-classical.html"
-	)
-URL_CLASH_SUB=( "https://github.com/legiz-ru/x-ui-pro/raw/master/clash/clash.yaml"
-		"https://github.com/legiz-ru/x-ui-pro/raw/master/clash/clash_skrepysh.yaml"
-		"https://github.com/legiz-ru/x-ui-pro/raw/master/clash/clash_fullproxy_without_ru.yaml"
-  		"https://github.com/legiz-ru/x-ui-pro/raw/master/clash/clash_refilter_ech.yaml"
-	)
-DEST_DIR_SUB_PAGE="/var/www/subpage"
-DEST_FILE_SUB_PAGE="$DEST_DIR_SUB_PAGE/index.html"
-DEST_FILE_CLASH_SUB="$DEST_DIR_SUB_PAGE/clash.yaml"
-
-sudo mkdir -p "$DEST_DIR_SUB_PAGE"
-
-sudo curl -L "${URL_CLASH_SUB[$CLASH]}" -o "$DEST_FILE_CLASH_SUB"
-sudo curl -L "${URL_SUB_PAGE[$CUSTOMWEBSUB]}" -o "$DEST_FILE_SUB_PAGE"
-
-sed -i "s/\${DOMAIN}/$domain/g" "$DEST_FILE_SUB_PAGE"
-sed -i "s/\${DOMAIN}/$domain/g" "$DEST_FILE_CLASH_SUB"
-sed -i "s#\${SUB_JSON_PATH}#$json_path#g" "$DEST_FILE_SUB_PAGE"
-sed -i "s#\${SUB_PATH}#$sub_path#g" "$DEST_FILE_SUB_PAGE"
-sed -i "s#\${SUB_PATH}#$sub_path#g" "$DEST_FILE_CLASH_SUB"
-sed -i "s|sub.legiz.ru|$domain/$sub2singbox_path|g" "$DEST_FILE_SUB_PAGE"
-
-#while true; do	
-#	if [[ -n "$tg_escaped_link" ]]; then
-#		break
-#	fi
-#	echo -en "Enter your support link for web sub page (example https://t.me/durov/ ): " && read tg_escaped_link
-#done
-
-#sed -i -e "s|https://t.me/gozargah_marzban|$tg_escaped_link|g" -e "s|https://github.com/Gozargah/Marzban#donation|$tg_escaped_link|g" "$DEST_FILE_SUB_PAGE"
-
 ######################cronjob for ssl/reload service/cloudflareips######################################
 crontab -l | grep -v "certbot\|x-ui\|cloudflareips" | crontab -
-(crontab -l 2>/dev/null; echo '@reboot /usr/bin/sub2sing-box server --bind 127.0.0.1 --port 8080 > /dev/null 2>&1') | crontab -
 (crontab -l 2>/dev/null; echo '@daily x-ui restart > /dev/null 2>&1 && nginx -s reload;') | crontab -
 (crontab -l 2>/dev/null; echo '@weekly bash /etc/nginx/cloudflareips.sh > /dev/null 2>&1;') | crontab -
 (crontab -l 2>/dev/null; echo '@monthly certbot renew --nginx --non-interactive --post-hook "nginx -s reload" > /dev/null 2>&1;') | crontab -
@@ -992,25 +766,17 @@ if systemctl is-active --quiet x-ui; then clear
 	msg_inf "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
 	certbot certificates | grep -i 'Path:\|Domains:\|Expiry Date:'
 
-#	msg_inf "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
-#	if [[ -n $IP4 ]] && [[ "$IP4" =~ $IP4_REGEX ]]; then 
-#		msg_inf "IPv4: http://$IP4:$PORT/$RNDSTR/"
-#	fi
-#	if [[ -n $IP6 ]] && [[ "$IP6" =~ $IP6_REGEX ]]; then 
-#		msg_inf "IPv6: http://[$IP6]:$PORT/$RNDSTR/"
-#	fi
-
  msg_inf "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
-	msg_inf "X-UI Secure Panel: https://${domain}/${panel_path}/\n"
+	msg_inf "X-UI Secure Panel: https://${domain}/\n"
  	echo -e "Username:  ${config_username} \n" 
 	echo -e "Password:  ${config_password} \n" 
 	msg_inf "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
-    msg_inf "Web Sub Page your first client: https://${domain}/${web_path}?name=first\n"
-    msg_inf "Your local sub2sing-box instance: https://${domain}/$sub2singbox_path/\n"
+	msg_inf "Alternative Panel URL: https://${domain}/${panel_path}/\n"
+	msg_inf "Subscription URL: https://${domain}/${sub_path}/\n"
+	msg_inf "JSON Subscription: https://${domain}/${json_path}/\n"
   msg_inf "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
 	msg_inf "Please Save this Screen!!"	
 else
 	nginx -t && printf '0\n' | x-ui | grep --color=never -i ':'
 	msg_err "sqlite and x-ui to be checked, try on a new clean linux! "
 fi
-#################################################N-joy##################################################
